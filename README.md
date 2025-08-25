@@ -1,98 +1,116 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# 🎉 Event Management API
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📖 Sobre o Projeto
+A **Event Management API** é um serviço backend RESTful construído com **NestJS**.  
+Ela permite que usuários criem e gerenciem eventos, confirmem presença (RSVP) e visualizem participantes.  
 
-## Description
+Este projeto vai lhe proporcionar experiência em:
+- Construir **APIs REST** em NestJS.  
+- Projetar e trabalhar com **bancos de dados relacionais**.  
+- Implementar **autenticação e autorização** (JWT).  
+- Lidar com **relacionamentos muitos-para-muitos** (events ↔ attendees).  
+- Adicionar **filtros, paginação e validações**.  
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 🎯 Objetivo
+O objetivo deste projeto é simular uma **API de plataforma de eventos do mundo real**.  
+Os usuários devem ser capazes de:
+- Criar e atualizar eventos.  
+- Confirmar presença (RSVP) em eventos.  
+- Visualizar participantes e detalhes de eventos.  
+- Gerenciar seus próprios dados de forma segura.  
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+## 📂 Entidades & Modelo de Dados
 
-```bash
-# development
-$ npm run start
+### 1. **User**
+Representa pessoas que usam a plataforma.  
+- `id` (UUID, PK)  
+- `name` (string)  
+- `email` (string, único)  
+- `password` (string com hash)  
+- `role` (`'user' | 'admin'`)  
+- `createdAt` (timestamp)  
 
-# watch mode
-$ npm run start:dev
+### 2. **Event**
+Representa eventos criados por usuários.  
+- `id` (UUID, PK)  
+- `title` (string)  
+- `description` (text)  
+- `location` (string)  
+- `date` (datetime)  
+- `isPublic` (boolean, default `true`)  
+- `createdBy` (FK → User)  
+- `createdAt` (timestamp)  
 
-# production mode
-$ npm run start:prod
-```
+### 3. **Attendee (RSVP)**
+Representa o status de presença de um usuário em um evento.  
+- `id` (UUID, PK)  
+- `userId` (FK → User)  
+- `eventId` (FK → Event)  
+- `status` (`'going' | 'interested' | 'declined'`)  
+- `createdAt` (timestamp)  
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## 🌐 Endpoints da API
 
-# e2e tests
-$ npm run test:e2e
+### 🔑 Auth
+- `POST /auth/register` → Registrar novo usuário  
+- `POST /auth/login` → Login & obter JWT  
 
-# test coverage
-$ npm run test:cov
-```
+---
 
-## Deployment
+### 👤 Users
+- `GET /users/me` → Obter perfil do usuário logado  
+- `GET /users/:id` → Obter perfil público de um usuário (eventos criados, participando)  
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 🎉 Events
+- `POST /events` → Criar evento (auth necessário)  
+- `GET /events` → Listar eventos  
+  - Filtros: `date`, `location`, `isPublic`, `createdBy`  
+  - Paginação: `?page=1&limit=10`  
+- `GET /events/:id` → Detalhes de um evento (apenas se público OU dono OU participante)  
+- `PATCH /events/:id` → Atualizar evento (somente dono/admin)  
+- `DELETE /events/:id` → Deletar evento (somente dono/admin)  
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+---
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 🙋 Attendees / RSVPs
+- `POST /events/:id/rsvp` → Confirmar presença em evento (`status` = going/interested/declined)  
+- `GET /events/:id/attendees` → Listar participantes de um evento  
+- `PATCH /rsvps/:id` → Atualizar RSVP (alterar status)  
+- `DELETE /rsvps/:id` → Cancelar RSVP  
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🛠️ Tecnologias & Requisitos
+- **NestJS** (REST controllers, services, modules).  
+- **PostgreSQL** com **TypeORM/Prisma**.  
+- **Auth**: JWT com Passport.  
+- **Validação**: `class-validator`.  
+- **Documentação**: Swagger (`@nestjs/swagger`).  
+- **Bônus**: Implementar controle de acesso por roles (admin pode deletar qualquer evento).  
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 🚀 Funcionalidades Extras (Opcional)
+- Upload de imagem do evento (S3/Cloudinary).  
+- Envio de e-mail de notificação em RSVP.  
+- Endpoint de busca (`/events/search?query=music`).  
+- Usuário pode “seguir” outros usuários e ver seus eventos.  
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## ✅ O que Você Vai Aprender
+Ao concluir este projeto, você vai ganhar experiência prática em:  
+- **Construir APIs REST seguras** no NestJS.  
+- **Modelagem de banco de dados** (relacionamentos one-to-many & many-to-many).  
+- **Autenticação e autorização** (JWT, roles).  
+- **Paginação, filtros e busca**.  
+- **Documentação de APIs** com Swagger.  
