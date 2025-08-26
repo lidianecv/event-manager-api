@@ -12,10 +12,10 @@ export class User {
     @Column()
     email: string;
 
-    @Column()
+    @Column()//PASSWORD
     password: string;
 
-    @Column()
+    @Column()// ('user' | 'admin')
     role: string;
 
     @Column()

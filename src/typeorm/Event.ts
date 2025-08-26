@@ -20,7 +20,7 @@ date:number;
 @Column()
 isPublic :boolean;
 
-  @Column()
+  @Column()//RELAÇÃO
 createdBy :number
 
   @CreateDateColumn()
