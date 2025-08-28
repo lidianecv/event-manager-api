@@ -1,7 +1,6 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-
 export class Attendee {
     @PrimaryGeneratedColumn()
     id :number
